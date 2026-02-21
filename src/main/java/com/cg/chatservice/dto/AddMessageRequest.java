@@ -22,7 +22,9 @@ public class AddMessageRequest {
     @Size(max = 10_000, message = "content must be at most 10,000 characters")
     private String content;
 
-    /** Arbitrary context metadata (e.g. model name, temperature, citations). */
+    /**
+     * Arbitrary context metadata (e.g. model name, temperature, citations).
+     */
     private Map<String, Object> contextData;
 
     private Integer tokenCount;

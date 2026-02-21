@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+
 spring:
   application:
     name: chat-service
@@ -20,7 +21,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate          # use 'create' on first run, then switch to 'validate'
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
@@ -46,7 +47,7 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 3600000    # 1 hour in ms
+      time-to-live: 3600000
       cache-null-values: false
 
 # ─── App-level config ──────────────────────────────────────────────────────────
@@ -58,6 +59,24 @@ app:
   cache:
     session-ttl-seconds: 3600
     messages-ttl-seconds: 1800
+
+  # ─── Security ────────────────────────────────────────────────────────────────
+  security:
+    api-key: ${API_KEY:my-local-dev-api-key-12345}
+    cors:
+      allowed-origins:
+        - ${CORS_ORIGIN_1:http://localhost:3000}
+        - ${CORS_ORIGIN_2:http://localhost:8080}
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      allowed-headers:
+        - "*"
+      max-age-seconds: 3600
 
 # ─── Actuator ─────────────────────────────────────────────────────────────────
 management:

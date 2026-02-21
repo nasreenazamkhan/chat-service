@@ -8,4 +8,4 @@ target/
 .vscode/ 
 # Secrets 
 .env 
-application-local.yml 
+application-local.yml

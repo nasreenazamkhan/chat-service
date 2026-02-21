@@ -19,13 +19,19 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
 
     Optional<ChatSession> findBySessionUuidAndUserId(String sessionUuid, String userId);
 
-    /** All active (non-deleted) sessions for a user, newest first. */
+    /**
+     * All active (non-deleted) sessions for a user, newest first.
+     */
     Page<ChatSession> findByUserIdOrderByUpdatedAtDesc(String userId, Pageable pageable);
 
-    /** Favorite sessions for a user. */
+    /**
+     * Favorite sessions for a user.
+     */
     Page<ChatSession> findByUserIdAndFavoriteTrueOrderByUpdatedAtDesc(String userId, Pageable pageable);
 
-    /** Count active sessions for a user (used to enforce per-user limit). */
+    /**
+     * Count active sessions for a user (used to enforce per-user limit).
+     */
     long countByUserId(String userId);
 
     /**
@@ -43,7 +49,9 @@ public interface ChatSessionRepository extends JpaRepository<ChatSession, Long> 
             """)
     int softDeleteByUuidAndUserId(@Param("uuid") String uuid, @Param("userId") String userId);
 
-    /** Increment message counter atomically. */
+    /**
+     * Increment message counter atomically.
+     */
     @Modifying
     @Query("""
             UPDATE ChatSession s

@@ -32,7 +32,9 @@ public class ChatSession implements Serializable {
     @Builder.Default
     private String sessionUuid = UUID.randomUUID().toString();
 
-    /** External user identifier (e.g. auth token subject / user-id). */
+    /**
+     * External user identifier (e.g. auth token subject / user-id).
+     */
     @Column(name = "user_id", nullable = false, length = 128)
     private String userId;
 

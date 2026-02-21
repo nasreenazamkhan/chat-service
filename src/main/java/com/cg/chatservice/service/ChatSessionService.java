@@ -3,7 +3,6 @@ package com.cg.chatservice.service;
 import com.cg.chatservice.dto.CreateSessionRequest;
 import com.cg.chatservice.dto.RenameSessionRequest;
 import com.cg.chatservice.dto.SessionResponse;
-import com.cg.chatservice.entity.ChatSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -23,7 +22,4 @@ public interface ChatSessionService {
 
     void deleteSession(String sessionUuid, String userId);
 
-    ChatSession findSessionOwned(String sessionUuid, String userId);
-
-    void enforceSessionLimit(String userId);
 }

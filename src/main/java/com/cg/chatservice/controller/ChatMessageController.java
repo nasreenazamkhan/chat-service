@@ -51,7 +51,7 @@ public class ChatMessageController {
     public ResponseEntity<ApiResponse<List<MessageResponse>>> getMessages(
             @PathVariable String sessionUuid,
             @RequestHeader("X-User-Id") String userId,
-            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
 
         Pageable pageable = PageRequest.of(page, Math.min(size, 200));
@@ -65,7 +65,7 @@ public class ChatMessageController {
     public ResponseEntity<ApiResponse<List<MessageResponse>>> getLatestMessages(
             @PathVariable String sessionUuid,
             @RequestHeader("X-User-Id") String userId,
-            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
 
         Pageable pageable = PageRequest.of(page, Math.min(size, 200));

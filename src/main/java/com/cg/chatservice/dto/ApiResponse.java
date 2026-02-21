@@ -31,14 +31,14 @@ import java.util.List;
 public class ApiResponse<T> {
 
     private boolean success;
-    private String  message;
-    private T       data;
+    private String message;
+    private T data;
 
     @Builder.Default
     private String timestamp = Instant.now().toString();
 
     // ── Pagination meta (present only on list endpoints) ──────────────────────
-    private Long    totalElements;
+    private Long totalElements;
     private Integer totalPages;
     private Integer currentPage;
     private Integer pageSize;
@@ -57,7 +57,9 @@ public class ApiResponse<T> {
         return ApiResponse.<T>builder().success(false).message(message).build();
     }
 
-    /** Convenience factory for paginated list responses. */
+    /**
+     * Convenience factory for paginated list responses.
+     */
     public static <T> ApiResponse<List<T>> paged(Page<T> page) {
         return ApiResponse.<List<T>>builder()
                 .success(true)

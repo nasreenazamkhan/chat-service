@@ -2,10 +2,14 @@ package com.cg.chatservice.service;
 
 
 import com.cg.chatservice.config.AppProperties;
+import com.cg.chatservice.config.CacheNames;
 import com.cg.chatservice.dto.CreateSessionRequest;
 import com.cg.chatservice.dto.RenameSessionRequest;
 import com.cg.chatservice.dto.SessionResponse;
 import com.cg.chatservice.entity.ChatSession;
+import com.cg.chatservice.exception.AccessDeniedException;
+import com.cg.chatservice.exception.ResourceNotFoundException;
+import com.cg.chatservice.exception.SessionLimitExceededException;
 import com.cg.chatservice.repository.ChatSessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,7 +110,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             // Session either didn't exist or doesn't belong to this user
             boolean exists = sessionRepository.findBySessionUuid(sessionUuid).isPresent();
             if (!exists) throw ResourceNotFoundException.session(sessionUuid);
-            throw com.chat.service.exception.AccessDeniedException.session(userId, sessionUuid);
+            throw AccessDeniedException.session(userId, sessionUuid);
         }
         log.info("Soft-deleted session {} by user {}", sessionUuid, userId);
     }
@@ -119,7 +123,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
                 .orElseThrow(() -> {
                     boolean exists = sessionRepository.findBySessionUuid(sessionUuid).isPresent();
                     if (!exists) return ResourceNotFoundException.session(sessionUuid);
-                    return com.chat.service.exception.AccessDeniedException.session(userId, sessionUuid);
+                    return AccessDeniedException.session(userId, sessionUuid);
                 });
     }
 

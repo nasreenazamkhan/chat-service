@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class AppProperties {
 
-    private int maxMessageLength    = 10_000;
-    private int maxSessionsPerUser  = 500;
-    private int messagePageSize     = 50;
+    private int maxMessageLength = 10_000;
+    private int maxSessionsPerUser = 500;
+    private int messagePageSize = 50;
 }

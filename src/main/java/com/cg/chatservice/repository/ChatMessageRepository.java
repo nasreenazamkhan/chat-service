@@ -15,7 +15,9 @@ import java.util.Optional;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-    /** Paginated message history for a session (oldest first). */
+    /**
+     * Paginated message history for a session (oldest first).
+     */
     @Query("""
             SELECT m FROM ChatMessage m
              WHERE m.session.id = :sessionId
@@ -24,7 +26,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
             """)
     Page<ChatMessage> findActiveBySessionId(@Param("sessionId") Long sessionId, Pageable pageable);
 
-    /** Reverse-paged history (newest first – useful for infinite scroll). */
+    /**
+     * Reverse-paged history (newest first – useful for infinite scroll).
+     */
     @Query("""
             SELECT m FROM ChatMessage m
              WHERE m.session.id = :sessionId
@@ -35,7 +39,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     Optional<ChatMessage> findByMessageUuid(String messageUuid);
 
-    /** Count active messages in a session. */
+    /**
+     * Count active messages in a session.
+     */
     @Query("""
             SELECT COUNT(m) FROM ChatMessage m
              WHERE m.session.id = :sessionId
@@ -43,7 +49,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
             """)
     long countActiveBySessionId(@Param("sessionId") Long sessionId);
 
-    /** Filter by sender type inside a session. */
+    /**
+     * Filter by sender type inside a session.
+     */
     @Query("""
             SELECT m FROM ChatMessage m
              WHERE m.session.id  = :sessionId

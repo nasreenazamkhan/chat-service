@@ -41,7 +41,9 @@ public class ChatMessage implements Serializable {
     @Column(name = "sender_type", nullable = false, length = 16)
     private SenderType senderType;
 
-    /** Nullable: only populated for USER / SYSTEM messages. */
+    /**
+     * Nullable: only populated for USER / SYSTEM messages.
+     */
     @Column(name = "sender_id", length = 128)
     private String senderId;
 
@@ -56,7 +58,9 @@ public class ChatMessage implements Serializable {
     @Column(name = "context_data", columnDefinition = "JSON")
     private Map<String, Object> contextData;
 
-    /** Optional token count for cost tracking. */
+    /**
+     * Optional token count for cost tracking.
+     */
     @Column(name = "token_count")
     private Integer tokenCount;
 
