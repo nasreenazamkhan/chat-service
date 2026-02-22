@@ -27,16 +27,20 @@ public class RedisConfig {
     private static final Duration MESSAGES_TTL = Duration.ofMinutes(30);
 
     /**
-     * ObjectMapper configured for Redis serialization.
-     * - JavaTimeModule handles LocalDateTime serialization
-     * - Default typing preserves concrete types when deserializing
-     * - WRITE_DATES_AS_TIMESTAMPS disabled for ISO-8601 date strings
+     * ✅ Private method — NOT a @Bean
+     * This prevents Spring MVC from picking up this ObjectMapper
+     * as the default HTTP request/response serializer.
+     * <p>
+     * If exposed as @Bean, Spring MVC uses it for Postman requests too,
+     * then expects @class type info in every JSON body — causing:
+     * "missing type id property '@class'" error on all API calls.
      */
-    @Bean
-    public ObjectMapper redisObjectMapper() {
+    private ObjectMapper buildRedisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // Default typing adds @class info so Redis can reconstruct
+        // the correct concrete type when deserializing cached objects
         mapper.activateDefaultTyping(
                 LaissezFaireSubTypeValidator.instance,
                 ObjectMapper.DefaultTyping.NON_FINAL,
@@ -46,13 +50,12 @@ public class RedisConfig {
     }
 
     /**
-     * Custom serializer — no deprecated classes.
-     * Directly implements RedisSerializer<Object> using ObjectMapper.
+     * Custom Redis serializer using the private ObjectMapper.
+     * Only used for Redis — Spring MVC keeps its own separate ObjectMapper.
      */
     @Bean
-    public CustomJacksonRedisSerializer customJacksonRedisSerializer(
-            ObjectMapper redisObjectMapper) {
-        return new CustomJacksonRedisSerializer(redisObjectMapper);
+    public CustomJacksonRedisSerializer customJacksonRedisSerializer() {
+        return new CustomJacksonRedisSerializer(buildRedisObjectMapper());
     }
 
     /**
@@ -67,7 +70,6 @@ public class RedisConfig {
         template.setConnectionFactory(factory);
 
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
-
         template.setKeySerializer(stringSerializer);
         template.setHashKeySerializer(stringSerializer);
         template.setValueSerializer(serializer);
@@ -88,10 +90,8 @@ public class RedisConfig {
             RedisConnectionFactory factory,
             CustomJacksonRedisSerializer serializer) {
 
-        RedisCacheConfiguration defaultConfig = buildCacheConfig(SESSION_TTL, serializer);
-
         return RedisCacheManager.builder(factory)
-                .cacheDefaults(defaultConfig)
+                .cacheDefaults(buildCacheConfig(SESSION_TTL, serializer))
                 .withInitialCacheConfigurations(Map.of(
                         CacheNames.SESSIONS, buildCacheConfig(SESSION_TTL, serializer),
                         CacheNames.MESSAGES, buildCacheConfig(MESSAGES_TTL, serializer)
@@ -100,9 +100,6 @@ public class RedisConfig {
                 .build();
     }
 
-    /**
-     * Builds a RedisCacheConfiguration with the given TTL and serializer.
-     */
     private RedisCacheConfiguration buildCacheConfig(
             Duration ttl,
             RedisSerializer<Object> serializer) {

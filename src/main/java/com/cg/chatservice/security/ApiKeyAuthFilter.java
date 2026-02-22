@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -23,7 +24,27 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
     private static final String API_KEY_HEADER = "X-API-KEY";
 
+    // ── Paths that do NOT require API key ─────────────────────────────────────
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            "/actuator",
+            "/swagger-ui",
+            "/swagger-ui.html",
+            "/v3/api-docs",
+            "/favicon.ico"
+    );
+
     private final SecurityProperties securityProperties;
+
+    /**
+     * Skip this filter entirely for Swagger UI, actuator and api-docs paths.
+     * Without this, ApiKeyAuthFilter blocks Swagger UI before Spring Security
+     * can apply the permitAll() rules configured in SecurityConfig.
+     */
+    @Override
+    protected boolean shouldNotFilter(jakarta.servlet.http.HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -31,20 +52,18 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // ── Skip actuator endpoints ───────────────────────────────────────────
-        String path = request.getRequestURI();
-        if (path.startsWith("/actuator")) {
-            filterChain.doFilter(request, response);
+        // ── Skip if response already committed ────────────────────────────────
+        if (response.isCommitted()) {
             return;
         }
 
+        String path = request.getRequestURI();
         String apiKey = request.getHeader(API_KEY_HEADER);
 
         // ── Missing header ────────────────────────────────────────────────────
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("Request rejected - missing API key. Path: {}", path);
-            sendErrorResponse(response,
-                    HttpStatus.UNAUTHORIZED,
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED,
                     "Missing API key. Please provide X-API-KEY header.");
             return;
         }
@@ -52,28 +71,37 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
         // ── Invalid key ───────────────────────────────────────────────────────
         if (!securityProperties.getApiKey().equals(apiKey)) {
             log.warn("Request rejected - invalid API key. Path: {}", path);
-            sendErrorResponse(response,
-                    HttpStatus.FORBIDDEN,
-                    "Invalid API key.");
+            sendErrorResponse(response, HttpStatus.FORBIDDEN, "Invalid API key.");
             return;
         }
 
-
+        // ── Valid — set Authentication in SecurityContext ─────────────────────
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
-                        "api-key-user",           // principal
-                        null,                     // credentials
-                        List.of(new SimpleGrantedAuthority("ROLE_API"))  // authorities
+                        "api-key-user",
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_API"))
                 );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        log.debug("API key validated. SecurityContext updated. Path: {}", path);
+        log.debug("API key validated. Path: {}", path);
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return true;
+    }
+
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return true;
     }
 
     private void sendErrorResponse(HttpServletResponse response,
                                    HttpStatus status,
                                    String message) throws IOException {
+        if (response.isCommitted()) return;
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write("""
@@ -82,7 +110,6 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                     "message": "%s",
                     "timestamp": "%s"
                 }
-                """.formatted(message, java.time.Instant.now().toString()));
+                """.formatted(message, Instant.now().toString()));
     }
 }
-

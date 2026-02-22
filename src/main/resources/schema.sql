@@ -12,7 +12,7 @@ USE chat_db;
 -- ── Chat Sessions ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS chat_sessions (
     id            BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
-    session_uuid  CHAR(36)         NOT NULL,
+     session_uuid  VARCHAR(36)         NOT NULL,
     user_id       VARCHAR(128)     NOT NULL,
     title         VARCHAR(255)     NOT NULL DEFAULT 'New Chat',
     is_favorite   TINYINT(1)       NOT NULL DEFAULT 0,
@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
     created_at    DATETIME(6)      NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at    DATETIME(6)      NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
     deleted_at    DATETIME(6)               DEFAULT NULL,
+
     PRIMARY KEY (id),
     UNIQUE KEY uk_session_uuid (session_uuid),
     INDEX idx_user_id           (user_id),
@@ -31,8 +32,8 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
 
 -- ── Chat Messages ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS chat_messages (
-     id           BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
-     message_uuid CHAR(36)         NOT NULL,
+    id           BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    message_uuid VARCHAR(36)         NOT NULL,
     session_id   BIGINT UNSIGNED  NOT NULL,
     sender_type  ENUM('USER','ASSISTANT','SYSTEM') NOT NULL,
     sender_id    VARCHAR(128)              DEFAULT NULL,
@@ -41,6 +42,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     token_count  INT UNSIGNED              DEFAULT NULL,
     is_deleted   TINYINT(1)       NOT NULL DEFAULT 0,
     created_at   DATETIME(6)      NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+
     PRIMARY KEY (id),
     UNIQUE KEY uk_message_uuid (message_uuid),
     INDEX idx_session_id        (session_id),

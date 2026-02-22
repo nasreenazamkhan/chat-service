@@ -9,6 +9,6 @@ class ChatServiceApplicationTests {
     @Test
     void contextLoads() {
     }
-    
+
 
 }

@@ -14,21 +14,32 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
-/**
- * Rate limiting filter to protect against brute force attacks.
- * Limits each IP to 100 requests per minute using Redis counters.
- * <p>
- * If attacker tries to brute-force sessionUuid or userId,
- * they will be blocked after 100 attempts per minute.
- */
 @RequiredArgsConstructor
 @Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final int MAX_REQUESTS_PER_MINUTE = 100;
     private static final String RATE_LIMIT_PREFIX = "rate_limit:";
+    // ── Paths that do NOT require rate limiting ────────────────────────────────
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            "/actuator",
+            "/swagger-ui",
+            "/swagger-ui.html",
+            "/v3/api-docs",
+            "/favicon.ico"
+    );
     private final RedisTemplate<String, Object> redisTemplate;
+
+    /**
+     * Skip rate limiting for Swagger UI and actuator paths.
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -36,9 +47,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // ── Skip actuator ─────────────────────────────────────────────────────
-        if (request.getRequestURI().startsWith("/actuator")) {
-            filterChain.doFilter(request, response);
+        // ── Skip if response already committed ────────────────────────────────
+        if (response.isCommitted()) {
             return;
         }
 
@@ -48,17 +58,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
         try {
             Long requestCount = redisTemplate.opsForValue().increment(redisKey);
 
-            // Set expiry on first request only
             if (requestCount != null && requestCount == 1) {
                 redisTemplate.expire(redisKey, Duration.ofMinutes(1));
             }
 
-            // ── Add rate limit headers so client knows their limits ────────────
-            response.setHeader("X-RateLimit-Limit", String.valueOf(MAX_REQUESTS_PER_MINUTE));
-            response.setHeader("X-RateLimit-Remaining", String.valueOf(
-                    Math.max(0, MAX_REQUESTS_PER_MINUTE - (requestCount != null ? requestCount : 0))));
+            response.setHeader("X-RateLimit-Limit",
+                    String.valueOf(MAX_REQUESTS_PER_MINUTE));
+            response.setHeader("X-RateLimit-Remaining",
+                    String.valueOf(Math.max(0, MAX_REQUESTS_PER_MINUTE -
+                            (requestCount != null ? requestCount : 0))));
 
-            // ── Block if limit exceeded ────────────────────────────────────────
             if (requestCount != null && requestCount > MAX_REQUESTS_PER_MINUTE) {
                 log.warn("Rate limit exceeded for IP: {}", clientIp);
                 sendErrorResponse(response);
@@ -66,20 +75,25 @@ public class RateLimitFilter extends OncePerRequestFilter {
             }
 
         } catch (Exception e) {
-            // If Redis is down, allow request through (fail open)
-            log.error("Rate limit check failed (Redis issue), allowing request: {}", e.getMessage());
+            log.error("Rate limit check failed, allowing request: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Extracts real client IP, handles proxies and load balancers.
-     */
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return true;
+    }
+
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return true;
+    }
+
     private String getClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            // X-Forwarded-For can contain multiple IPs — take the first (original client)
             return xForwardedFor.split(",")[0].trim();
         }
         String xRealIp = request.getHeader("X-Real-IP");
@@ -90,6 +104,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private void sendErrorResponse(HttpServletResponse response) throws IOException {
+        if (response.isCommitted()) return;
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setHeader("Retry-After", "60");

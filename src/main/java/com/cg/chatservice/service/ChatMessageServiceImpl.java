@@ -2,6 +2,7 @@ package com.cg.chatservice.service;
 
 
 import com.cg.chatservice.config.CacheNames;
+import com.cg.chatservice.config.RestPage;
 import com.cg.chatservice.dto.AddMessageRequest;
 import com.cg.chatservice.dto.MessageResponse;
 import com.cg.chatservice.entity.ChatMessage;
@@ -57,24 +58,32 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheNames.MESSAGES, key = "#sessionUuid + ':' + #userId + ':asc:' + #pageable.pageNumber")
-    public Page<MessageResponse> getMessages(String sessionUuid, String userId, Pageable pageable) {
+    @Cacheable(value = CacheNames.MESSAGES,
+            key = "#sessionUuid + ':' + #userId + ':asc:' + #pageable.pageNumber")
+    public RestPage<MessageResponse> getMessages(String sessionUuid, String userId, Pageable pageable) {
         ChatSession session = findSessionOwned(sessionUuid, userId);
-        return messageRepository
+        Page<MessageResponse> page = messageRepository
                 .findActiveBySessionId(session.getId(), pageable)
                 .map(MessageResponse::from);
+        // ✅ Wrap in RestPage so Redis can serialize/deserialize correctly
+        return new RestPage<>(page.getContent(), pageable.getPageNumber(),
+                pageable.getPageSize(), page.getTotalElements());
     }
 
     // ── Read (newest first) ───────────────────────────────────────────────────
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheNames.MESSAGES, key = "#sessionUuid + ':' + #userId + ':desc:' + #pageable.pageNumber")
-    public Page<MessageResponse> getMessagesDesc(String sessionUuid, String userId, Pageable pageable) {
+    @Cacheable(value = CacheNames.MESSAGES,
+            key = "#sessionUuid + ':' + #userId + ':desc:' + #pageable.pageNumber")
+    public RestPage<MessageResponse> getMessagesDesc(String sessionUuid, String userId, Pageable pageable) {
         ChatSession session = findSessionOwned(sessionUuid, userId);
-        return messageRepository
+        Page<MessageResponse> page = messageRepository
                 .findActiveBySessionIdDesc(session.getId(), pageable)
                 .map(MessageResponse::from);
+        // ✅ Wrap in RestPage so Redis can serialize/deserialize correctly
+        return new RestPage<>(page.getContent(), pageable.getPageNumber(),
+                pageable.getPageSize(), page.getTotalElements());
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
