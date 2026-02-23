@@ -19,10 +19,14 @@ WORKDIR /app
 # Add a non-root user for security
 RUN addgroup -S chatgroup && adduser -S chatuser -G chatgroup
 
+# Create logs directory and give ownership to non-root user BEFORE switching user
+RUN mkdir -p /app/logs/archived && \
+    chown -R chatuser:chatgroup /app/logs
+
 # Copy the built JAR from builder stage
 COPY --from=builder /app/target/chat-service-1.0.0.jar app.jar
 
-# Change ownership to non-root user
+# Change ownership of jar to non-root user
 RUN chown chatuser:chatgroup app.jar
 
 USER chatuser
@@ -31,7 +35,7 @@ USER chatuser
 EXPOSE 8080
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget -qO- http://localhost:8080/actuator/health || exit 1
 
 # Run the application
