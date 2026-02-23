@@ -20,10 +20,11 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    private static final String API_KEY_SCHEME = "X-API-KEY";
-    private static final String USER_ID_SCHEME = "X-User-Id";
     @Value("${server.port:8080}")
     private String serverPort;
+
+    private static final String API_KEY_SCHEME = "X-API-KEY";
+    private static final String USER_ID_SCHEME = "X-User-Id";
 
     @Bean
     public OpenAPI openAPI() {
@@ -43,21 +44,18 @@ public class SwaggerConfig {
                                         .name(API_KEY_SCHEME)
                                         .type(SecurityScheme.Type.APIKEY)
                                         .in(SecurityScheme.In.HEADER)
-                                        .description("API Key — default: my-local-dev-api-key-12345")
+                                        .description("Enter your API key. Obtain this from your administrator.")
                         )
                         .addSecuritySchemes(USER_ID_SCHEME,
                                 new SecurityScheme()
                                         .name(USER_ID_SCHEME)
                                         .type(SecurityScheme.Type.APIKEY)
                                         .in(SecurityScheme.In.HEADER)
-                                        .description("User ID — example: user-001")
+                                        .description("Your unique user identifier. Example format: user-001")
                         )
                 );
     }
 
-    /**
-     * Adds X-User-Id as a visible input field on every endpoint in Swagger UI.
-     */
     @Bean
     public OperationCustomizer globalHeaderCustomizer() {
         return (operation, handlerMethod) -> {
@@ -67,7 +65,7 @@ public class SwaggerConfig {
                             .name("X-User-Id")
                             .description("ID of the requesting user")
                             .required(true)
-                            .schema(new StringSchema().example("user-001"))
+                            .schema(new StringSchema())   // ← no example value
             );
             return operation;
         };
@@ -80,16 +78,16 @@ public class SwaggerConfig {
                         ## Chat Session & Message Management Service
                         
                         ### Authentication
-                        Click the 🔒 **Authorize** button and enter:
-                        - **X-API-KEY** : `my-local-dev-api-key-12345`
-                        - **X-User-Id** : `user-001`
+                        Click the 🔒 **Authorize** button (top right) and enter:
+                        - **X-API-KEY** : Your API key provided by the administrator
+                        - **X-User-Id** : Your user identifier
                         
                         ### Features
                         - Create and manage chat sessions
                         - Add messages (USER / ASSISTANT / SYSTEM)
                         - Rename and favourite sessions
                         - Paginated message history
-                        - Redis caching + Rate limiting
+                        - Redis caching + Rate limiting (100 req/min)
                         """)
                 .version("1.0.0")
                 .contact(new Contact()
