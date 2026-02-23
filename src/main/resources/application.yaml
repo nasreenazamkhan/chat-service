@@ -1,7 +1,6 @@
 server:
   port: 8080
 
-
 spring:
   application:
     name: chat-service
@@ -86,14 +85,19 @@ management:
         include: health,info,metrics
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always
 
+info:
+  app:
+    name: Chat Service
+    version: 1.0.0
+    description: Chat Session & Message Management API
+  java:
+    version: ${java.version}
+
+# ─── Logging ──────────────────────────────────────────────────────────────────
 logging:
-  level:
-    com.chat: DEBUG
-    org.hibernate.SQL: WARN
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  config: classpath:logback-spring.xml
 
 # ─── SpringDoc / Swagger ───────────────────────────────────────────────────────
 springdoc:

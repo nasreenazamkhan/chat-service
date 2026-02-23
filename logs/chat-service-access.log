@@ -1,0 +1,2 @@
+2026-02-23 14:21:34.264 INFO  [http-nio-8080-exec-2] [reqId=430ab607] [user=user-005] ACCESS_LOG - → GET /api/v1/sessions/e08fbd42-dd23-46d3-b9ee-8084befd82da/messages/latest | user=user-005 | ip=0:0:0:0:0:0:0:1
+2026-02-23 14:21:34.806 INFO  [http-nio-8080-exec-2] [reqId=430ab607] [user=user-005] ACCESS_LOG - ← GET /api/v1/sessions/e08fbd42-dd23-46d3-b9ee-8084befd82da/messages/latest | 200 | 542ms
