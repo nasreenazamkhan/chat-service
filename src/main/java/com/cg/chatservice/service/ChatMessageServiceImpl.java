@@ -59,7 +59,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = CacheNames.MESSAGES,
-            key = "#sessionUuid + ':' + #userId + ':asc:' + #pageable.pageNumber")
+            key = "#sessionUuid + ':' + #userId + ':asc:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public RestPage<MessageResponse> getMessages(String sessionUuid, String userId, Pageable pageable) {
         ChatSession session = findSessionOwned(sessionUuid, userId);
         Page<MessageResponse> page = messageRepository
@@ -75,7 +75,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = CacheNames.MESSAGES,
-            key = "#sessionUuid + ':' + #userId + ':desc:' + #pageable.pageNumber")
+            key = "#sessionUuid + ':' + #userId + ':desc:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public RestPage<MessageResponse> getMessagesDesc(String sessionUuid, String userId, Pageable pageable) {
         ChatSession session = findSessionOwned(sessionUuid, userId);
         Page<MessageResponse> page = messageRepository

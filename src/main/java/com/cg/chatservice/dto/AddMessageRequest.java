@@ -1,6 +1,5 @@
 package com.cg.chatservice.dto;
 
-
 import com.cg.chatservice.enums.SenderType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

@@ -1,0 +1,39 @@
+Chat Service API
+A production-ready Chat Session & Message Management REST API built with Spring Boot 3.3.5, MySQL 8, and Redis 7.
+
+Quick Start with Docker
+The fastest way to run the entire application — one command starts everything.
+
+Step 1 — Clone the Repository
+git clone https://github.com/nasreenazamkhan/chat-service.git
+cd chat-service
+
+Step 2 — Create Environment File
+cp .env.example .env
+
+Step 3 — Start All Services
+docker compose up --build
+
+Step 4 — Verify Everything Is Running
+docker compose ps
+
+Step 5 — Open Swagger UI
+http://localhost:8080/swagger-ui/index.html
+
+
+API Documentation Swagger
+The API is fully documented and interactive via Swagger UI.
+Swagger UI
+http://localhost:8080/swagger-ui/index.html
+
+
+How to Authenticate in Swagger UI
+
+Open http://localhost:8080/swagger-ui/index.html
+Click the  Authorize button (top right)
+Enter:
+X-API-KEY → my-local-dev-api-key-12345
+X-User-Id → user-001
+
+Click Authorize then Close
+All Try it out requests now include your credentials automatically

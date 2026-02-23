@@ -1,0 +1,31 @@
+# Maven
+target/
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment files — never include secrets in Docker image
+.env
+.env.local
+application-local.yml
+
+# Logs
+*.log
+logs/
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore

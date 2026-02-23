@@ -3,16 +3,19 @@ package com.cg.chatservice.dto;
 
 import com.cg.chatservice.entity.ChatMessage;
 import com.cg.chatservice.enums.SenderType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MessageResponse {
-
     private String messageUuid;
     private String sessionUuid;
     private SenderType senderType;
