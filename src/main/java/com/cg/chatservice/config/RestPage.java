@@ -9,11 +9,6 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
-/**
- * JSON-serializable Page for Redis caching.
- * Spring's PageImpl has no default constructor so Jackson
- * cannot deserialize it — this class fixes that.
- */
 @JsonIgnoreProperties(ignoreUnknown = true, value = {"pageable"})
 @Schema(hidden = true)   // ← hide from SpringDoc — prevents 500 error
 public class RestPage<T> extends PageImpl<T> {
