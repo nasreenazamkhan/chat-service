@@ -26,15 +26,7 @@ public class RedisConfig {
     private static final Duration SESSION_TTL = Duration.ofHours(1);
     private static final Duration MESSAGES_TTL = Duration.ofMinutes(30);
 
-    /**
-     * ✅ Private method — NOT a @Bean
-     * This prevents Spring MVC from picking up this ObjectMapper
-     * as the default HTTP request/response serializer.
-     * <p>
-     * If exposed as @Bean, Spring MVC uses it for Postman requests too,
-     * then expects @class type info in every JSON body — causing:
-     * "missing type id property '@class'" error on all API calls.
-     */
+
     private ObjectMapper buildRedisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -49,18 +41,13 @@ public class RedisConfig {
         return mapper;
     }
 
-    /**
-     * Custom Redis serializer using the private ObjectMapper.
-     * Only used for Redis — Spring MVC keeps its own separate ObjectMapper.
-     */
+
     @Bean
     public CustomJacksonRedisSerializer customJacksonRedisSerializer() {
         return new CustomJacksonRedisSerializer(buildRedisObjectMapper());
     }
 
-    /**
-     * General-purpose RedisTemplate with String keys and JSON values.
-     */
+
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory factory,
@@ -80,11 +67,7 @@ public class RedisConfig {
         return template;
     }
 
-    /**
-     * CacheManager with per-cache TTL configuration.
-     * - SESSIONS cache : 1 hour TTL
-     * - MESSAGES cache : 30 minutes TTL
-     */
+    
     @Bean
     public RedisCacheManager cacheManager(
             RedisConnectionFactory factory,
