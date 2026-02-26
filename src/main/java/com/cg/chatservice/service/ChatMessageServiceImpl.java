@@ -65,7 +65,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         Page<MessageResponse> page = messageRepository
                 .findActiveBySessionId(session.getId(), pageable)
                 .map(MessageResponse::from);
-        // ✅ Wrap in RestPage so Redis can serialize/deserialize correctly
         return new RestPage<>(page.getContent(), pageable.getPageNumber(),
                 pageable.getPageSize(), page.getTotalElements());
     }
@@ -81,12 +80,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         Page<MessageResponse> page = messageRepository
                 .findActiveBySessionIdDesc(session.getId(), pageable)
                 .map(MessageResponse::from);
-        // ✅ Wrap in RestPage so Redis can serialize/deserialize correctly
         return new RestPage<>(page.getContent(), pageable.getPageNumber(),
                 pageable.getPageSize(), page.getTotalElements());
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
 
     private ChatSession findSessionOwned(String sessionUuid, String userId) {
         return sessionRepository

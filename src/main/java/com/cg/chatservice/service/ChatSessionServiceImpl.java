@@ -86,7 +86,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         return SessionResponse.from(session);
     }
 
-    // ── Update – Favourite ────────────────────────────────────────────────────
+
 
     @Override
     @Transactional
@@ -115,7 +115,6 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         log.info("Soft-deleted session {} by user {}", sessionUuid, userId);
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
 
     private ChatSession findSessionOwned(String sessionUuid, String userId) {
         return sessionRepository
